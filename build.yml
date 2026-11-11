@@ -1,0 +1,35 @@
+name: build
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r requirements.txt
+      - name: Build Windows exe
+        if: runner.os == 'Windows'
+        run: pyinstaller --onefile --windowed --name FolderLocker app.py
+      - name: Build macOS app
+        if: runner.os == 'macOS'
+        run: |
+          pyinstaller --windowed --name FolderLocker app.py
+          ditto -c -k --keepParent dist/FolderLocker.app dist/FolderLocker-mac.zip
+      - name: Build Linux binary
+        if: runner.os == 'Linux'
+        run: pyinstaller --onefile --name FolderLocker app.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: FolderLocker-${{ runner.os }}
+          path: |
+            dist/FolderLocker.exe
+            dist/FolderLocker-mac.zip
+            dist/FolderLocker

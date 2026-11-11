@@ -1,0 +1,4 @@
+cryptography
+pillow
+pyinstaller
+pyobjc-framework-Cocoa; sys_platform == "darwin"
